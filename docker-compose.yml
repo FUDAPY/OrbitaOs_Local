@@ -16,7 +16,7 @@ services:
       - mongo-data:/data/db
     healthcheck:
       # El bot espera a este healthcheck antes de conectar (evita la carrera
-      # de conexion en el primer despliegue).
+      # de conexion en el primer arranque).
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 10s
       timeout: 5s

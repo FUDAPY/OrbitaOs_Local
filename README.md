@@ -6,10 +6,13 @@
 
 OrbitaOs atiende desde WhatsApp: agenda citas con recordatorios, administra tareas
 en un tablero Kanban, redacta documentos y responde consultas usando un modelo de
-lenguaje. Todo queda registrado en MongoDB y corre en Docker.
+lenguaje. Todo queda registrado en MongoDB y corre en local: Node.js o Docker.
 
 > **Repositorio.** `FUDAPY/OrbitaOs_Local`: ejecución en una máquina local,
 > con Node.js o con Docker Compose.
+>
+> **Servidor dedicado.** Para desplegar en un servidor con dominio y proxy,
+> ver [FUDAPY/OrbitaOs_Server](https://github.com/FUDAPY/OrbitaOs_Server).
 
 <div align="center">
 
@@ -310,10 +313,10 @@ de los casos y **ninguna cita se agendaba**, sin error visible: el bot respondí
 El mismo parser se reutiliza en `task_flow.js` para interpretar "mañana" o "el
 12/09" durante el formulario, sin gastar tokens.
 
-### Chromium: el perfil queda bloqueado entre despliegues
+### Chromium: el perfil queda bloqueado entre reinicios
 
 `LocalAuth` usa `<SESSION_PATH>/session-<clientId>` como `userDataDir`, y ese
-directorio vive en un volumen persistente. Cuando el contenedor se corta,
+directorio vive en `./session` o en un volumen. Cuando el proceso se corta,
 Chromium deja atrás:
 
 ```
@@ -489,7 +492,7 @@ Se parte de `.env.example` como base. Las que no tienen valor por defecto son la
 | `SESSION_PATH` | `/app/session` | Carpeta de sesión. Debe estar en un volumen |
 | `CHROME_PATH` | automática | Ruta del navegador. Vacío: Chrome/Edge del sistema o el de Puppeteer |
 
-### Recordatorios y servidor
+### Recordatorios y panel
 
 | Variable | Por defecto | Para qué |
 |---|---|---|
@@ -497,7 +500,7 @@ Se parte de `.env.example` como base. Las que no tienen valor por defecto son la
 | `CRON_TZ` | `America/Asuncion` | Zona horaria del cron |
 | `REMINDER_TOLERANCE_MINUTES` | `10` | Ventana de tolerancia a cada hito |
 | `REMINDER_TIMEZONE` | `America/Asuncion` | Zona de los textos enviados |
-| `PORT` | `3000` | Puerto interno del servidor de salud |
+| `PORT` | `3000` | Puerto del panel y de `/health` |
 
 El panel se abre en `http://localhost:3000` (o en el puerto que defina `PORT`).
 
@@ -809,13 +812,14 @@ CRUD de contactos exige `admin` u `owner`.
 está vivo desde la terminal, alcanza con `/health`:
 
 ```bash
-docker compose exec orbitaos wget -qO- http://127.0.0.1:3000/health
+curl -s http://localhost:3000/health
 ```
 
-El JSON de estado completo responde así con una sesión abierta:
+El JSON de estado completo responde con una sesión abierta (cookie
+`orbita_sesion`, que se ve en las herramientas del navegador):
 
 ```bash
-docker compose exec orbitaos wget -qO- http://127.0.0.1:3000/
+curl -s -H "Cookie: orbita_sesion=<token>" http://localhost:3000/
 ```
 
 ```json
@@ -859,10 +863,10 @@ El mismo consumo se consulta desde WhatsApp con `/estado`.
 curl -s http://localhost:3000/health
 ```
 
-Comprobar el estado desde el servidor:
+Comprobar el estado:
 
 ```bash
-docker compose exec orbitaos wget -qO- http://127.0.0.1:3000/health
+curl -s http://localhost:3000/health
 ```
 
 Mientras WhatsApp no está vinculado, el código de emparejamiento aparece

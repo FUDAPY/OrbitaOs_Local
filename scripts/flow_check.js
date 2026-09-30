@@ -586,7 +586,7 @@ check('web_search usa solo DuckDuckGo', () => {
   assert.ok(src.includes('catch'), 'debe manejar errores de red');
 });
 
-console.log('\nRedes y dominio');
+console.log('\nRedes y puertos');
 
 check('el compose NO declara redes externas de Traefik', () => {
   const fs2 = require('fs');
