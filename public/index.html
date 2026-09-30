@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>OrbitaOs · Panel de operaciones</title>
+  <link rel="stylesheet" href="/app.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='13' fill='%2316a34a'/><circle cx='16' cy='16' r='5' fill='%23052e16'/></svg>">
+</head>
+<body>
+
+<!-- =======================================================================
+     Acceso
+     Sin sesion no se pide ningun dato: el historial no se sirve nunca a
+     quien no se identifico.
+     ==================================================================== -->
+<div id="login" class="pantalla-login oculto">
+  <form id="forma-login" class="caja-login">
+    <div class="marca marca-grande">Orbita<span>Os</span></div>
+    <p class="ayuda">Panel de operaciones</p>
+
+    <label for="login-usuario">Usuario</label>
+    <input id="login-usuario" name="username" autocomplete="username"
+           autocapitalize="none" spellcheck="false" required>
+
+    <label for="login-clave">Contraseña</label>
+    <input id="login-clave" name="password" type="password"
+           autocomplete="current-password" required>
+
+    <button type="submit" id="boton-entrar">Entrar</button>
+    <p id="login-error" class="error" role="alert"></p>
+  </form>
+
+  <p class="pie-login">
+    Se usa el mismo usuario y contraseña que en la línea de comandos.
+  </p>
+</div>
+
+<!-- =======================================================================
+     Aplicacion
+     ==================================================================== -->
+<div id="app" class="oculto">
+  <header class="barra">
+    <div class="marca">Orbita<span>Os</span></div>
+
+    <nav id="pestanas" class="pestanas">
+      <button class="pestana activa" data-vista="panel">Panel</button>
+      <button class="pestana" data-vista="calendario">Calendario</button>
+      <button class="pestana" data-vista="tablero">Tablero</button>
+      <button class="pestana" data-vista="mensajes">Mensajes</button>
+      <button class="pestana" data-vista="contactos">Contactos</button>
+      <button class="pestana" data-vista="programados">Programados</button>
+      <button class="pestana" data-vista="consumo">Consumo</button>
+    </nav>
+
+    <div class="sesion">
+      <span id="quien-soy" class="quien"></span>
+      <button id="boton-salir" class="boton-suave">Salir</button>
+    </div>
+  </header>
+
+  <main class="contenido">
+
+    <!-- Panel de inicio -->
+    <section id="vista-panel" class="vista activa">
+      <div class="cabecera-vista">
+        <h2 id="saludo">Panel</h2>
+        <button class="boton-suave" data-refrescar="panel">Actualizar</button>
+      </div>
+
+      <div id="aviso-vinculacion" class="aviso-vinculacion oculto"></div>
+
+      <div id="tarjetas-estado" class="tarjetas"></div>
+
+      <div class="dos-columnas">
+        <div class="bloque">
+          <h3>Próximos eventos</h3>
+          <div id="panel-eventos" class="lista-mini"></div>
+        </div>
+        <div class="bloque">
+          <h3>Requieren atención</h3>
+          <div id="panel-tareas" class="lista-mini"></div>
+        </div>
+      </div>
+
+      <div class="bloque">
+        <h3>Tablero de un vistazo</h3>
+        <div id="panel-tablero" class="resumen-columnas"></div>
+      </div>
+    </section>
+
+    <!-- Calendario -->
+    <section id="vista-calendario" class="vista">
+      <div class="cabecera-vista">
+        <h2>Calendario</h2>
+        <div class="acciones">
+          <button class="boton-suave" id="mes-anterior">‹</button>
+          <strong id="mes-actual"></strong>
+          <button class="boton-suave" id="mes-siguiente">›</button>
+          <button class="boton-suave" id="mes-hoy">Hoy</button>
+          <button class="boton" id="nuevo-evento">+ Evento</button>
+        </div>
+      </div>
+      <div id="calendario" class="calendario"></div>
+      <div class="bloque">
+        <h3>Eventos del mes</h3>
+        <div id="lista-eventos" class="lista"></div>
+      </div>
+    </section>
+
+    <!-- Tablero Kanban -->
+    <section id="vista-tablero" class="vista">
+      <div class="cabecera-vista">
+        <h2>Tablero</h2>
+        <div class="acciones">
+          <input id="filtro-tareas" class="buscador" placeholder="Buscar tareas…">
+          <select id="filtro-responsable" class="selector"></select>
+          <button class="boton" id="nueva-tarea">+ Tarea</button>
+        </div>
+      </div>
+      <p class="ayuda">Arrastrá una tarjeta a otra columna para moverla de etapa.</p>
+      <div id="kanban" class="kanban"></div>
+    </section>
+
+    <!-- Mensajes -->
+    <section id="vista-mensajes" class="vista">
+      <div class="cabecera-vista">
+        <h2>Historial de mensajes</h2>
+        <div class="acciones">
+          <input id="buscar-mensajes" class="buscador" placeholder="Buscar en el texto…">
+          <select id="filtro-direccion" class="selector">
+            <option value="">Todo</option>
+            <option value="inbound">Recibidos</option>
+            <option value="outbound">Enviados</option>
+          </select>
+          <button class="boton-suave" data-refrescar="mensajes">Actualizar</button>
+        </div>
+      </div>
+      <div class="mensajeria">
+        <aside class="conversaciones">
+          <div id="lista-conversaciones" class="lista"></div>
+        </aside>
+        <div class="hilo">
+          <div id="hilo-titulo" class="hilo-titulo">Elegí una conversación</div>
+          <div id="hilo" class="hilo-cuerpo"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contactos -->
+    <section id="vista-contactos" class="vista">
+      <div class="cabecera-vista">
+        <h2>Números habilitados</h2>
+        <div class="acciones">
+          <input id="buscar-contactos" class="buscador" placeholder="Buscar contacto…">
+          <button class="boton" id="nuevo-contacto">+ Contacto</button>
+        </div>
+      </div>
+      <p class="ayuda">
+        Solo estos números pueden escribirle al bot. Revocar el acceso no borra
+        el historial de mensajes.
+      </p>
+      <div class="tabla-envoltura">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Teléfono</th>
+              <th>Rol</th>
+              <th>Acceso</th>
+              <th>Cumpleaños</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tabla-contactos"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Mensajes programados -->
+    <section id="vista-programados" class="vista">
+      <div class="cabecera-vista">
+        <h2>Mensajes programados</h2>
+        <button class="boton" id="nuevo-programado">+ Programar</button>
+      </div>
+      <p class="ayuda">
+        El bot los envía solo, en la fecha indicada. En el texto podés usar
+        <code>{nombre}</code>, <code>{apellido}</code> y
+        <code>{nombre_completo}</code>.
+      </p>
+      <div id="lista-programados" class="lista"></div>
+    </section>
+
+    <!-- Consumo -->
+    <section id="vista-consumo" class="vista">
+      <div class="cabecera-vista">
+        <h2>Consumo de IA</h2>
+        <button class="boton-suave" data-refrescar="consumo">Actualizar</button>
+      </div>
+      <div id="tarjetas-consumo" class="tarjetas"></div>
+      <div class="bloque">
+        <h3>Respuestas por día</h3>
+        <div id="grafico-consumo" class="grafico"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Modal generico: lo arma el JavaScript -->
+<div id="modal" class="modal oculto">
+  <div class="modal-caja" role="dialog" aria-modal="true">
+    <div class="modal-cabecera">
+      <h3 id="modal-titulo"></h3>
+      <button id="modal-cerrar" class="boton-suave" aria-label="Cerrar">✕</button>
+    </div>
+    <form id="modal-forma" class="modal-cuerpo"></form>
+    <p id="modal-error" class="error"></p>
+  </div>
+</div>
+
+<!-- Avisos flotantes -->
+<div id="avisos" class="avisos"></div>
+
+<script src="/app.js"></script>
+</body>
+</html>

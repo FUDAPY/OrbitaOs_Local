@@ -1,0 +1,111 @@
+# OrbitaOs - ejecucion local con Docker Compose (ver README).
+# Las variables se leen del .env de este directorio.
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    command: ["mongod", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: orbitaos
+      # Sin esto los timestamps se guardan en UTC.
+      TZ: ${TZ:-America/Asuncion}
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      # El bot espera a este healthcheck antes de conectar (evita la carrera
+      # de conexion en el primer despliegue).
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - orbita
+
+  orbitaos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      # Zona horaria del negocio: sin esto los cron corren en UTC.
+      TZ: ${TZ:-America/Asuncion}
+
+      # Zona horaria usada para formatear fechas y para el cron.
+      BUSINESS_TIMEZONE: ${TZ:-America/Asuncion}
+
+      # --- MongoDB ---
+      MONGO_URI: mongodb://mongo:27017/orbitaos
+      MONGO_MAX_POOL_SIZE: ${MONGO_MAX_POOL_SIZE:-10}
+
+      # --- Space Bunny Alpha ---
+      SPACE_BUNNY_API_URL: ${SPACE_BUNNY_API_URL:-https://spacebunnymodel.com/api/v1/chat/completions}
+      SPACE_BUNNY_API_KEY: ${SPACE_BUNNY_API_KEY:-}
+      SPACE_BUNNY_MODEL: ${SPACE_BUNNY_MODEL:-space-bunny-alpha}
+      SPACE_BUNNY_TEMPERATURE: ${SPACE_BUNNY_TEMPERATURE:-0.2}
+      SPACE_BUNNY_MAX_TOKENS: ${SPACE_BUNNY_MAX_TOKENS:-4096}
+      SPACE_BUNNY_TIMEOUT_MS: ${SPACE_BUNNY_TIMEOUT_MS:-60000}
+      AI_CONTEXT_MESSAGES: ${AI_CONTEXT_MESSAGES:-8}
+      # Tope diario de llamadas a la IA (0 = sin limite; al alcanzarlo se usan
+      # las reglas locales).
+      SPACE_BUNNY_DAILY_CAP: ${SPACE_BUNNY_DAILY_CAP:-0}
+
+      # --- Seguridad / usuarios ---
+      # La lista blanca es opcional: el acceso real vive en la base de datos y
+      # los telefonos de aqui se dan de alta como usuarios al arrancar.
+      WHITELIST: ${WHITELIST:-}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_NAME: ${ADMIN_NAME:-}
+      ADMIN_PHONE: ${ADMIN_PHONE:-}
+      # Numeros que administran la lista blanca por WhatsApp (coma separados).
+      ADMIN_WHITELIST: ${ADMIN_WHITELIST:-}
+      GROUP_PREFIX: ${GROUP_PREFIX:-}
+
+      # --- Sesion de WhatsApp (volumen persistente) ---
+      # Con BOT_PHONE el bot se empareja por codigo (servidor sin monitor);
+      # sin ella hay que escanear el QR de los logs.
+      BOT_PHONE: ${BOT_PHONE:-}
+      SESSION_PATH: /app/session
+      PUPPETEER_USER_DATA_DIR: /app/.wwebjs
+      WEBJS_CACHE_TYPE: local
+
+      # --- Cron / recordatorios ---
+      CRON_REMINDERS: ${CRON_REMINDERS:-*/1 * * * *}
+      CRON_TZ: ${CRON_TZ:-America/Argentina/Buenos_Aires}
+      REMINDER_TOLERANCE_MINUTES: ${REMINDER_TOLERANCE_MINUTES:-10}
+      REMINDER_TIMEZONE: ${REMINDER_TIMEZONE:-America/Argentina/Buenos_Aires}
+
+      LOG_MESSAGES: ${LOG_MESSAGES:-true}
+      # Puerto del panel y de /health.
+      PORT: ${PORT:-3000}
+      # Busqueda web con DuckDuckGo (sin costo de API).
+      WEB_SEARCH_ENABLED: ${WEB_SEARCH_ENABLED:-true}
+    ports:
+      - "3000:3000"
+    volumes:
+      # El volumen lo crea Docker como root; el entrypoint corrige el ownership
+      # y borra los locks, por eso no se declara "user:" aqui.
+      - session-data:/app/session
+      - wwebjs-data:/app/.wwebjs
+    # Chromium se cae con el /dev/shm de 64MB por defecto.
+    shm_size: "1gb"
+    networks:
+      # Red propia: mongo y el bot se hablan entre ellos.
+      - orbita
+
+volumes:
+  mongo-data:
+  session-data:
+  wwebjs-data:
+
+networks:
+  orbita:
+    driver: bridge

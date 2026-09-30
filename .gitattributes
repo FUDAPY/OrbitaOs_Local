@@ -1,0 +1,21 @@
+# Los scripts de shell deben guardarse con fin de línea LF.
+# Con CRLF el shebang queda como "#!/bin/sh\r", Linux busca un intérprete
+# llamado "sh\r" y el contenedor falla con:
+#   /app/docker-entrypoint.sh: No such file or directory
+*.sh text eol=lf
+
+# Los ficheros de texto normales se dejan como LF en el repositorio.
+*.js   text eol=lf
+*.json text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.md   text eol=lf
+*.example text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+Dockerfile text eol=lf
+
+# Binarios: nunca se tocan.
+*.jpg  binary
+*.png  binary
+*.ico  binary

@@ -1,0 +1,45 @@
+{
+  "name": "orbitaos",
+  "version": "1.0.0",
+  "description": "OrbitaOs - Asistente personal y sistema de gestion de operaciones basado en WhatsApp",
+  "main": "index.js",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "node scripts/smoke.js && node scripts/models_check.js && node scripts/flow_check.js && node scripts/dates_check.js && node scripts/users_check.js && node scripts/locks_check.js && node scripts/flow_task_check.js && node scripts/health_check.js && node scripts/web_check.js",
+    "smoke": "node scripts/smoke.js",
+    "check:models": "node scripts/models_check.js",
+    "check:flow": "node scripts/flow_check.js",
+    "check:dates": "node scripts/dates_check.js",
+    "check:users": "node scripts/users_check.js",
+    "user": "node scripts/user.js",
+    "whitelist": "node scripts/whitelist.js",
+    "reset:session": "node scripts/reset_session.js",
+    "check:api": "node scripts/api_check.js",
+    "check:panel": "node scripts/web_check.js",
+    "check:e2e": "node scripts/e2e_check.js",
+    "probe:dates": "node scripts/date_probe.js"
+  },
+  "keywords": [
+    "whatsapp",
+    "whatsapp-web.js",
+    "bot",
+    "ai",
+    "operations",
+    "mongodb"
+  ],
+  "author": "OrbitaOs",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "duckduckgo-search": "^1.0.7",
+    "mongoose": "^8.9.5",
+    "node-cron": "^3.0.3",
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "^1.26.2"
+  }
+}

@@ -1,0 +1,32 @@
+# --- Secretos / entorno ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# --- Node ---
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.eslintcache
+
+# --- Sesion de WhatsApp y perfil de Chromium ---
+# NUNCA versionar: contiene la sesion vinculada a la cuenta.
+/session/
+/.wwebjs/
+*.session.json
+
+# --- Sistema operativo / IDE ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.log
+
+# --- Docker ---
+docker-compose.override.yml
+.dockerignore.local
+
